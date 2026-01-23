@@ -3,10 +3,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
-const { PrismaClient } = require('@prisma/client');
-
 // Cliente de Prisma: ORM que conecta con la base de datos (SQLite en dev, PostgreSQL en prod)
-const prisma = new PrismaClient();
+const prisma = require('./lib/prisma');
 
 // Importamos las rutas modularizadas
 const authRoutes = require('./routes/authRoutes');

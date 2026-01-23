@@ -17,23 +17,19 @@ const jwt = require('jsonwebtoken');
 // ============================================
 // CONFIGURACIÓN DE MOCKS
 // ============================================
-// Mock de Prisma ANTES de importar el servidor
-// Esto reemplaza PrismaClient con un objeto falso que controlamos
-jest.mock('@prisma/client', () => {
-  const mockPrisma = {
-    user: {
-      findUnique: jest.fn(),  // Simula búsqueda de usuario
-      create: jest.fn(),      // Simula creación de usuario
-    },
-  };
-  return {
-    PrismaClient: jest.fn(() => mockPrisma),
-  };
-});
+// Mock del módulo prisma ANTES de importar el servidor
+// Esto reemplaza el cliente de Prisma con un objeto falso que controlamos
+const mockPrisma = {
+  user: {
+    findUnique: jest.fn(),  // Simula búsqueda de usuario
+    create: jest.fn(),      // Simula creación de usuario
+  },
+};
+
+jest.mock('../lib/prisma', () => mockPrisma);
 
 const app = require('../server');
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../lib/prisma');
 
 // ============================================
 // SUITE DE TESTS: API DE AUTENTICACIÓN

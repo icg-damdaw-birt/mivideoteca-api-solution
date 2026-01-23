@@ -7,7 +7,6 @@ generator client {
 // - Producción (UD5): PostgreSQL en Neon
 datasource db {
   provider = "sqlite"  // Cambiar a "postgresql" en UD5
-  url      = env("DATABASE_URL")
 }
 
 // Usuario del sistema (alumno con su videoteca personal)

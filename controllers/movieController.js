@@ -1,6 +1,4 @@
-﻿const { PrismaClient } = require('@prisma/client');
-
-const prisma = new PrismaClient();
+﻿const prisma = require('../lib/prisma');
 
 // CRUD para películas: cada operación está protegida por autenticación
 // Solo se pueden ver/modificar las películas del usuario logueado

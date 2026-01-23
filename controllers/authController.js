@@ -1,8 +1,6 @@
 ﻿const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { PrismaClient } = require('@prisma/client');
-
-const prisma = new PrismaClient();
+const prisma = require('../lib/prisma');
 
 // Función auxiliar: crea un JWT que identifica al usuario por 1 hora
 // Los frontends (Flutter/SvelteKit) enviarán este token en cada petición
