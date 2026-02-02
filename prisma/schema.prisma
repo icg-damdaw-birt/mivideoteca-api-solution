@@ -28,6 +28,7 @@ model Movie {
   year       Int                            // Año de estreno
   posterUrl  String?                        // URL del póster (opcional)
   isFavorite Boolean  @default(false)       // Marcador de favorito
+  rating     Int      @default(0)           // Valoración 0-5
   
   createdAt DateTime @default(now())        // Cuándo se añadió
   updatedAt DateTime @updatedAt             // Última modificación
