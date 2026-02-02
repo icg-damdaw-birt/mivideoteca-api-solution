@@ -22,18 +22,15 @@ model User {
 
 // Película en la videoteca personal de un usuario
 model Movie {
-  id        String   @id @default(cuid())  // ID único
-  title     String                         // Título de la película
-  director  String                         // Director
-  year      Int                            // Año de estreno
-  posterUrl String?                        // URL del póster (opcional)
+  id         String   @id @default(cuid())  // ID único
+  title      String                         // Título de la película
+  director   String                         // Director
+  year       Int                            // Año de estreno
+  posterUrl  String?                        // URL del póster (opcional)
+  isFavorite Boolean  @default(false)       // Marcador de favorito
   
-  // Campos que se añadirán en UD3:
-  // - isFavorite Boolean @default(false)  // Favoritos (UD3 - guiado)
-  // - rating     Int?     @default(0)     // Rating 0-5 (UD3 - ejercicio)
-  
-  createdAt DateTime @default(now())       // Cuándo se añadió
-  updatedAt DateTime @updatedAt            // Última modificación
+  createdAt DateTime @default(now())        // Cuándo se añadió
+  updatedAt DateTime @updatedAt             // Última modificación
 
   // Relación: esta película pertenece a un usuario
   ownerId   String
