@@ -2,6 +2,25 @@
 
 API REST para gestionar una videoteca personal. Proyecto de referencia para el curso de Integración Continua con GitHub.
 
+## 📋 Requisitos
+
+- **Node.js** 20+
+- **npm** 10+
+
+## 🛠️ Stack Tecnológico
+
+| Tecnología | Versión | Descripción |
+|------------|---------|-------------|
+| Node.js | 20+ | Entorno de ejecución |
+| Express | 5.x | Framework web con async handlers nativos |
+| Prisma | 7.x | ORM moderno (config en `prisma.config.ts`) |
+| SQLite | - | Base de datos de desarrollo |
+| PostgreSQL | - | Base de datos de producción (UD5) |
+| Jest | 29.x | Framework de testing |
+| Supertest | - | Testing de APIs HTTP |
+| JWT | - | Autenticación stateless |
+| bcryptjs | - | Hash de contraseñas |
+
 ## 🗄️ Base de Datos
 
 ### **UD3: Desarrollo Local (SQLite)**
@@ -85,12 +104,14 @@ Esto significa:
 - Los tests son **ultrarrápidos** (sin I/O de disco)
 - El `DATABASE_URL` **no se usa** durante `npm test`
 
-### Estado actual de tests (UD3)
+### Estado de tests
 ```bash
 npm test
 
-# ✅ auth.test.js (implementado)
-# ⏸️ movies.test.js (se creará en video UD3)
+# ✅ auth.test.js      - Registro y login
+# ✅ movie.test.js     - CRUD de películas
+# ✅ favorite.test.js  - Toggle de favoritos
+# ✅ rating.test.js    - Sistema de puntuación
 ```
 
 ---
@@ -101,25 +122,12 @@ npm test
 |--------|---------|-------------|
 | `npm run dev` | nodemon server.js | Servidor con auto-reload |
 | `npm start` | node server.js | Servidor modo producción |
-| `npm test` | jest | Ejecutar tests |
-| `npm run test:watch` | jest --watchAll | Tests en modo watch |
+| `npm test` | jest --verbose | Ejecutar tests |
+| `npm run test:watch` | jest --watchAll --verbose | Tests en modo watch |
 | `npm run prisma:migrate` | prisma migrate dev | Crear/aplicar migraciones |
 | `npm run prisma:generate` | prisma generate | Regenerar cliente Prisma |
 | `npm run prisma:studio` | prisma studio | GUI de base de datos |
 | `npm run prisma:reset` | prisma migrate reset | Resetear BD (⚠️ borra datos) |
-
----
-
-## 🛠️ Stack Tecnológico
-
-- **Node.js** - Entorno de ejecución JavaScript
-- **Express 5** - Framework web minimalista
-- **Prisma** - ORM moderno para bases de datos
-- **SQLite** (UD3) / **PostgreSQL** (UD5) - Base de datos
-- **JWT** - Autenticación stateless
-- **bcryptjs** - Hash de contraseñas
-- **Jest** - Framework de testing
-- **Supertest** - Testing de APIs HTTP
 
 ---
 
@@ -128,23 +136,29 @@ npm test
 ```
 mivideoteca-api/
 ├── controllers/          # Lógica de negocio
-│   ├── authController.js     ✅ Implementado + testeado
-│   └── movieController.js    ✅ Implementado (sin tests)
+│   ├── authController.js     # Registro y login
+│   └── movieController.js    # CRUD + favoritos + rating
 ├── routes/              # Definición de endpoints
 │   ├── authRoutes.js
 │   └── movieRoutes.js
 ├── middleware/          # Funciones intermedias
 │   └── authMiddleware.js
-├── prisma/             # Configuración de base de datos
-│   ├── schema.prisma   # Esquema de datos
-│   ├── dev.db         # SQLite (generado en UD3)
-│   └── migrations/    # Historial de cambios en BD
-├── __tests__/         # Tests automatizados
-│   ├── auth.test.js   ✅ Implementado
-│   └── movie.test.js  ⏸️ Se creará en video UD3
-├── server.js          # Punto de entrada
-├── package.json       # Dependencias y scripts
-└── .env              # Variables de entorno (local)
+├── lib/                 # Utilidades compartidas
+│   └── prisma.js        # Cliente Prisma configurado
+├── prisma/              # Configuración de base de datos
+│   ├── schema.prisma    # Esquema de datos
+│   ├── dev.db           # SQLite (generado tras migrate)
+│   └── migrations/      # Historial de cambios en BD
+├── __tests__/           # Tests automatizados
+│   ├── auth.test.js     # Tests de autenticación
+│   ├── movie.test.js    # Tests CRUD películas
+│   ├── favorite.test.js # Tests de favoritos
+│   └── rating.test.js   # Tests de rating
+├── prisma.config.ts     # Configuración Prisma 7
+├── AGENTS.md            # Guía para agentes de IA
+├── server.js            # Punto de entrada
+├── package.json         # Dependencias y scripts
+└── .env                 # Variables de entorno (local)
 ```
 
 ---
@@ -201,7 +215,7 @@ Content-Type: application/json
   "title": "Inception",
   "director": "Christopher Nolan",
   "year": 2010,
-  "genre": "Sci-Fi"
+  "posterUrl": "https://image.tmdb.org/t/p/w500/..."
 }
 ```
 
@@ -211,8 +225,10 @@ PUT /api/movies/:id
 Content-Type: application/json
 
 {
-  "title": "Inception (Updated)",
-  "year": 2010
+  "title": "Inception (Director's Cut)",
+  "director": "Christopher Nolan",
+  "year": 2010,
+  "posterUrl": "https://image.tmdb.org/t/p/w500/..."
 }
 ```
 
@@ -221,61 +237,68 @@ Content-Type: application/json
 DELETE /api/movies/:id
 ```
 
+#### Toggle favorito
+```http
+PATCH /api/movies/:id/favorite
+```
+Respuesta: película actualizada con `isFavorite` invertido.
+
+#### Actualizar rating
+```http
+PATCH /api/movies/:id/rating
+Content-Type: application/json
+
+{
+  "rating": 4
+}
+```
+Validación: rating debe ser entre 0 y 5 (0 = sin valorar).
+
+---
+
+## 🏷️ Versiones (Tags)
+
+Este repositorio tiene tags para acceder a versiones específicas:
+
+| Tag | Descripción | URL |
+|-----|-------------|-----|
+| `v1-favoritos` | CRUD + sistema de favoritos | [ver código](https://github.com/icg-damdaw-birt/mivideoteca-api-solution/tree/v1-favoritos) |
+| `v2-rating` | + sistema de rating (0-5) | [ver código](https://github.com/icg-damdaw-birt/mivideoteca-api-solution/tree/v2-rating) |
+
+Para clonar una versión específica:
+```bash
+git clone --branch v1-favoritos https://github.com/icg-damdaw-birt/mivideoteca-api-solution.git
+```
+
 ---
 
 ## 🎓 Para Estudiantes
 
 ### **UD3: El Backend y su Red de Seguridad (Testing)**
-**Público: DAM + DAW (todos juntos)**
 
-#### **Estado inicial:**
-- ✅ API funcionando con CRUD completo
-- ✅ Tests de autenticación implementados
-- ⏸️ Tests de películas **pendientes** (video)
+#### Contenido del video:
+- Implementación de **Favoritos** (`isFavorite` + `toggleFavorite`)
+- Creación de tests con Jest y mocks de Prisma
 
-#### **🎬 En el video harás:**
-1. **Crear `movie.test.js`**
-   - Test: GET /api/movies
-   - Test: POST /api/movies
-   - Test: PUT /api/movies/:id
-   - Test: DELETE /api/movies/:id
-
-2. **Implementar Favoritos**
-   - Modificar schema de Prisma (campo `isFavorite`)
-   - Endpoint: PATCH /api/movies/:id/favorite
-   - Test de favoritos
-
-#### **📝 Tu ejercicio:**
-Implementar **Rating** (calificación 1-5) usando IA:
-- Modificar schema (campo `rating`)
-- Endpoint: PATCH /api/movies/:id/rating
-- Validación: rating entre 1 y 5
-- Tests completos
+#### Tu ejercicio:
+Implementar **Rating** (calificación 0-5):
+- Modificar schema (campo `rating Int @default(0)`)
+- Endpoint: `PATCH /api/movies/:id/rating`
+- Validación: rating entre 0 y 5
+- Crear `rating.test.js` con tests
 
 ---
 
 ### **UD4: Frontend (Flutter o SvelteKit)**
-**Público dividido:**
 - **DAM**: Flutter obligatorio, Svelte opcional
 - **DAW**: Svelte obligatorio, Flutter opcional
 
-En esta unidad consumirás el backend que creaste en UD3.
+Consumirás esta API desde tu frontend.
 
 ---
 
 ### **UD5: Deploy en Producción**
-**Público: DAM + DAW**
-
-Migraremos de SQLite a **PostgreSQL en Neon**:
-```env
-# Producción
-DATABASE_URL="postgresql://user:password@neon.tech/mivideoteca"
-```
-
-Y desplegaremos en:
-- Backend → Render/Railway
-- Frontend Flutter → GitHub Releases (APK)
-- Frontend Svelte → Vercel
+Migración a PostgreSQL en Neon y deploy en Render/Vercel.
 
 ---
 
@@ -300,7 +323,7 @@ npm run prisma:reset
 
 ## 📚 Recursos Útiles
 
-- [Documentación de Prisma](https://www.prisma.io/docs)
+- [Documentación de Prisma 7](https://www.prisma.io/docs)
 - [Express.js Guide](https://expressjs.com/en/guide/routing.html)
 - [JWT Introduction](https://jwt.io/introduction)
 - [Jest Documentation](https://jestjs.io/docs/getting-started)
